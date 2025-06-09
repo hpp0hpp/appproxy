@@ -188,6 +188,25 @@ class AppConfigState extends State<AppConfigList> {
     });
   }
 
+  // 对应用列表进行排序，将选中的应用移到前面
+  void _sortAppList() {
+    _jsonAppListInfo.sort((a, b) {
+      bool? itemASelected =
+          _selectedItemsMap['${a["packageName"]}|${a["uid"]}'] ?? false;
+      bool? itemBSelected =
+          _selectedItemsMap['${b["packageName"]}|${b["uid"]}'] ?? false;
+      // 如果两个都未选中，保持原顺序
+      if (!itemASelected && !itemBSelected) return 0;
+      // 如果A被选中，放在前面
+      if (itemASelected && !itemBSelected) return -1;
+      // 如果B被选中，放在前面
+      if (!itemASelected && itemBSelected) return 1;
+      // 如果两个都已选中，按原始顺序
+      return 0;
+    });
+    _itemCount = _jsonAppListInfo.length;
+  }
+
   // 远程调用获取Android 应用列表
   Future<bool> getAppList() async {
     try {
@@ -225,21 +244,7 @@ class AppConfigState extends State<AppConfigList> {
       }
 
       // 把已选择的移到前面去
-      _jsonAppListInfo.sort((a, b) {
-        bool? itemASelected =
-            _selectedItemsMap['${a["packageName"]}|${a["uid"]}'] ?? false;
-        bool? itemBSelected =
-            _selectedItemsMap['${b["packageName"]}|${b["uid"]}'] ?? false;
-        // 如果两个都未选中，保持原顺序
-        if (!itemASelected && !itemBSelected) return 0;
-        // 如果A被选中，放在前面
-        if (itemASelected && !itemBSelected) return -1;
-        // 如果B被选中，放在前面
-        if (!itemASelected && itemBSelected) return 1;
-        // 如果两个都已选中，按原始顺序
-        return 0;
-      });
-      _itemCount = _jsonAppListInfo.length;
+      _sortAppList();
 
       return true;
     } on PlatformException catch (e) {
@@ -546,8 +551,11 @@ class CardCheckboxState extends State<CardCheckbox> {
         setState(() {
           _isSelected = newValue;
         });
-        // 如果需要，这里可以处理选中项的变化逻辑
-        debugPrint("index: $newValue");
+        // 通知父组件重新排序并刷新UI
+        Future.delayed(const Duration(milliseconds: 100), () {
+          (context.findAncestorStateOfType<AppConfigState>())?._sortAppList();
+          (context.findAncestorStateOfType<AppConfigState>())?.setState(() {});
+        });
       },
     );
   }
