@@ -23,6 +23,8 @@ enum AppOption {
   showUserApp,
   // 系统app
   showSystemApp,
+  // 忽略localhost请求
+  ignoreLocalhost,
 }
 
 Future<List> invokeGetAppList(token) async {
@@ -100,6 +102,9 @@ class AppConfigState extends State<AppConfigList> {
 
   // 是否全选
   bool _selectAll = false;
+
+  // 是否忽略localhost请求
+  bool _ignoreLocalhost = false;
 
   // 显示搜索框
   bool _showSearch = false;
@@ -185,6 +190,15 @@ class AppConfigState extends State<AppConfigList> {
       }
       // 并且更新本地数据
       _appfile.saveAppConfig(_selectedItemsMap);
+    });
+  }
+
+  // 更新忽略localhost选项
+  void updateIgnoreLocalhost(bool ignore) {
+    setState(() {
+      _ignoreLocalhost = ignore;
+      debugPrint("updateIgnoreLocalhost: $_ignoreLocalhost");
+      // 这里可以根据需要添加实际忽略localhost请求的逻辑
     });
   }
 
@@ -383,6 +397,10 @@ class AppConfigState extends State<AppConfigList> {
                           updateShowSystemApp(_showSystemAppSelected);
                           _selectAll = false;
                           break;
+                        case AppOption.ignoreLocalhost:
+                          _ignoreLocalhost = !_ignoreLocalhost;
+                          updateIgnoreLocalhost(_ignoreLocalhost);
+                          break;
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -400,7 +418,12 @@ class AppConfigState extends State<AppConfigList> {
                         CheckedPopupMenuItem<AppOption>(
                             checked: _showSystemAppSelected,
                             value: AppOption.showSystemApp,
-                            child: Text(S.of(context).text_show_system_app))
+                            child: Text(S.of(context).text_show_system_app)),
+                        CheckedPopupMenuItem<AppOption>(
+                          checked: _ignoreLocalhost,
+                          value: AppOption.ignoreLocalhost,
+                          child: const Text('忽略localhost请求'),
+                        )
                       ];
                     })
               ]),
