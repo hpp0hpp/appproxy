@@ -23,8 +23,8 @@ enum AppOption {
   showUserApp,
   // 系统app
   showSystemApp,
-  // 忽略localhost请求
-  ignoreLocalhost,
+  // // 忽略localhost请求
+  // ignoreLocalhost,
 }
 
 Future<List> invokeGetAppList(token) async {
@@ -397,10 +397,10 @@ class AppConfigState extends State<AppConfigList> {
                           updateShowSystemApp(_showSystemAppSelected);
                           _selectAll = false;
                           break;
-                        case AppOption.ignoreLocalhost:
-                          _ignoreLocalhost = !_ignoreLocalhost;
-                          updateIgnoreLocalhost(_ignoreLocalhost);
-                          break;
+                        // case AppOption.ignoreLocalhost:
+                        //   _ignoreLocalhost = !_ignoreLocalhost;
+                        //   updateIgnoreLocalhost(_ignoreLocalhost);
+                        //   break;
                       }
                     },
                     itemBuilder: (BuildContext context) {
@@ -419,11 +419,11 @@ class AppConfigState extends State<AppConfigList> {
                             checked: _showSystemAppSelected,
                             value: AppOption.showSystemApp,
                             child: Text(S.of(context).text_show_system_app)),
-                        CheckedPopupMenuItem<AppOption>(
-                          checked: _ignoreLocalhost,
-                          value: AppOption.ignoreLocalhost,
-                          child: const Text('忽略localhost请求'),
-                        )
+                        // CheckedPopupMenuItem<AppOption>(
+                        //   checked: _ignoreLocalhost,
+                        //   value: AppOption.ignoreLocalhost,
+                        //   child: const Text('忽略localhost请求'),
+                        // )
                       ];
                     })
               ]),
