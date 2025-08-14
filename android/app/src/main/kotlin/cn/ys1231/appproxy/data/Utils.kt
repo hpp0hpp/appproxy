@@ -70,12 +70,12 @@ class Utils(private val context: Context) {
             // 获取并添加应用的UID
             appInfoMap["uid"] = info.applicationInfo!!.uid
             
-            // 获取应用的图标，并将其转换为Base64编码的字符串
+            // 获取应用的图标，缩小为缩略图后再进行Base64编码
             val iconDrawable = pm.getApplicationIcon(info.packageName)
-
-            val bitmap = drawableToBitmap(iconDrawable)
+            val thumbSize = 64 // 缩略图尺寸，可根据需求调整
+            val bitmap = drawableToBitmap(iconDrawable, thumbSize, thumbSize)
             val byteArrayOutputStream = ByteArrayOutputStream()
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
+            bitmap.compress(Bitmap.CompressFormat.PNG, 80, byteArrayOutputStream) // 适当降低质量
             val iconBytes = byteArrayOutputStream.toByteArray()
             appInfoMap["iconBytes"] = Base64.encodeToString(iconBytes, Base64.NO_WRAP)
 
@@ -101,14 +101,12 @@ class Utils(private val context: Context) {
     private val PackageInfo.isSystemApp: Boolean
         get() = applicationInfo!!.flags and FLAG_SYSTEM != 0
 
-    private fun drawableToBitmap(drawable: Drawable): Bitmap {
-        val bitmapWidth = drawable.intrinsicWidth
-        val bitmapHeight = drawable.intrinsicHeight
-        val bitmapConfig =
-            if (drawable.opacity != PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565
-        val bitmap = Bitmap.createBitmap(bitmapWidth, bitmapHeight, bitmapConfig)
+    // 支持缩略图尺寸的转换
+    private fun drawableToBitmap(drawable: Drawable, width: Int, height: Int): Bitmap {
+        val bitmapConfig = if (drawable.opacity != PixelFormat.OPAQUE) Bitmap.Config.ARGB_8888 else Bitmap.Config.RGB_565
+        val bitmap = Bitmap.createBitmap(width, height, bitmapConfig)
         val canvas = Canvas(bitmap)
-        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.setBounds(0, 0, width, height)
         drawable.draw(canvas)
         return bitmap
     }
