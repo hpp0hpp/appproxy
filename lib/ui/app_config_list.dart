@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:isolate';
+import 'dart:typed_data';
 
 import 'package:appproxy/data/app_proxy_config_data.dart';
 import 'package:appproxy/events/app_events.dart';

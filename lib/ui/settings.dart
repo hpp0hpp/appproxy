@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:version/version.dart';
 import 'dart:io';
 
+import '../events/language_bloc.dart';
 import '../generated/l10n.dart';
 
 class AppSettings extends StatefulWidget {
@@ -23,6 +24,7 @@ class AppSettings extends StatefulWidget {
 class _AppSettingsState extends State<AppSettings> {
   var _version = "v0";
   String _arch = "";
+  bool _isSwitchZh = true;
   bool _isCheckUpdate = true;
   bool _isCheckWifi = true;
   bool _isEnableDarkMode = false;
@@ -33,7 +35,8 @@ class _AppSettingsState extends State<AppSettings> {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     _arch = androidInfo.supportedAbis[0];
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    // 获取是否需要检测更新
+    // 初始化设置数据
+    _isSwitchZh = await AppSetings.getCnOrEn();
     _isCheckUpdate = await AppSetings.getCheckUpdate();
     _isCheckWifi = await AppSetings.getCheckWifi();
     _isEnableDarkMode = await AppSetings.getEnableDarkMode();
@@ -76,6 +79,57 @@ class _AppSettingsState extends State<AppSettings> {
       ),
       body: Column(
         children: [
+          Container(
+            alignment: Alignment.centerLeft,
+            padding: const EdgeInsets.only(left: 10.0, top: 10.0),
+            child: Text(S.of(context).LanguageChoice,
+                style: const TextStyle(color: Colors.lightBlue)),
+          ),
+          GestureDetector(
+            child: Card(
+              child: Container(
+                padding: const EdgeInsets.only(left: 10.0),
+                width: MediaQuery.of(context).size.width,
+                height: 50.0,
+                child: Row(
+                  children: [
+                    Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(S.of(context).text_cn_en)),
+                    const Spacer(),
+                    Switch(
+                        value: _isSwitchZh,
+                        onChanged: (bool newValue) {
+                          _isSwitchZh = newValue;
+                          AppSetings.setCnOrEn(newValue);
+                          if (newValue) {
+                            context.read<LanguageBloc>().add(
+                                SetLanguageEvent(const Locale('zh', 'CN')));
+                          } else {
+                            context.read<LanguageBloc>().add(
+                                SetLanguageEvent(const Locale('en', 'US')));
+                          }
+                        })
+                  ],
+                ),
+              ),
+            ),
+            onTap: () {
+              setState(() {
+                _isSwitchZh = !_isSwitchZh;
+                if (_isSwitchZh) {
+                  context
+                      .read<LanguageBloc>()
+                      .add(SetLanguageEvent(const Locale('zh', 'CN')));
+                } else {
+                  context
+                      .read<LanguageBloc>()
+                      .add(SetLanguageEvent(const Locale('en', 'US')));
+                }
+                debugPrint('isSwitchZh:$_isSwitchZh');
+              });
+            },
+          ),
           Container(
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 10.0, top: 10.0),
@@ -123,49 +177,65 @@ class _AppSettingsState extends State<AppSettings> {
                 style: const TextStyle(color: Colors.lightBlue)),
           ),
           GestureDetector(
-              child: Card(
-                  child: Container(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      width: MediaQuery.of(context).size.width,
-                      height: 50.0,
-                      child: Row(children: [
-                        Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(S.of(context).text_is_dark_mode)),
-                        const SizedBox(width: 10),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Text(
-                            S.of(context).text_default_follow_the_system,
-                            style: TextStyle(
-                                color: (_isEnableDarkMode ||
-                                        MediaQuery.of(context)
-                                                .platformBrightness ==
-                                            Brightness.dark)
-                                    ? Colors.white54
-                                    : Colors.black26),
-                          ),
+            child: Card(
+                child: Container(
+                    padding: const EdgeInsets.only(left: 10.0),
+                    width: MediaQuery.of(context).size.width,
+                    height: 50.0,
+                    child: Row(children: [
+                      Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(S.of(context).text_is_dark_mode)),
+                      const SizedBox(width: 10),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          S.of(context).text_default_follow_the_system,
+                          style: TextStyle(
+                              color: (_isEnableDarkMode ||
+                                      MediaQuery.of(context)
+                                              .platformBrightness ==
+                                          Brightness.dark)
+                                  ? Colors.white54
+                                  : Colors.black26),
                         ),
-                        const Spacer(),
-                        Switch(
-                            value: _isEnableDarkMode,
-                            onChanged: (bool newValue) {
-                              setState(() {
-                                _isEnableDarkMode = newValue;
-                                debugPrint('isEnableDarkMode:$newValue');
-                                AppSetings.setEnableDarkMode(newValue);
-                                if (_isEnableDarkMode) {
-                                  context
-                                      .read<ThemeBloc>()
-                                      .add(SetThemeEvent(ThemeMode.dark));
-                                } else {
-                                  context
-                                      .read<ThemeBloc>()
-                                      .add(SetThemeEvent(ThemeMode.system));
-                                }
-                              });
-                            })
-                      ])))),
+                      ),
+                      const Spacer(),
+                      Switch(
+                          value: _isEnableDarkMode,
+                          onChanged: (bool newValue) {
+                            setState(() {
+                              _isEnableDarkMode = newValue;
+                              debugPrint('isEnableDarkMode:$newValue');
+                              AppSetings.setEnableDarkMode(newValue);
+                              if (_isEnableDarkMode) {
+                                context
+                                    .read<ThemeBloc>()
+                                    .add(SetThemeEvent(ThemeMode.dark));
+                              } else {
+                                context
+                                    .read<ThemeBloc>()
+                                    .add(SetThemeEvent(ThemeMode.system));
+                              }
+                            });
+                          })
+                    ]))),
+            onTap: () {
+              // 切换主题（点击整个卡片）
+              setState(() {
+                _isEnableDarkMode = !_isEnableDarkMode;
+                debugPrint('isEnableDarkMode:$_isEnableDarkMode');
+                AppSetings.setEnableDarkMode(_isEnableDarkMode);
+                if (_isEnableDarkMode) {
+                  context.read<ThemeBloc>().add(SetThemeEvent(ThemeMode.dark));
+                } else {
+                  context
+                      .read<ThemeBloc>()
+                      .add(SetThemeEvent(ThemeMode.system));
+                }
+              });
+            },
+          ),
           Container(
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 10.0, top: 10.0),
@@ -197,6 +267,14 @@ class _AppSettingsState extends State<AppSettings> {
                 ),
               ),
             ),
+            onTap: () {
+              // 切换wifi检查
+              setState(() {
+                _isCheckWifi = !_isCheckWifi;
+                debugPrint('isCheckWifi:$_isCheckWifi');
+                AppSetings.setCheckWifi(_isCheckWifi);
+              });
+            },
           ),
           Container(
             alignment: Alignment.centerLeft,
@@ -283,7 +361,7 @@ class _AppSettingsState extends State<AppSettings> {
                 children: [
                   Text(S.of(context).text_describe),
                   Text(S.of(context).text_author),
-                  Text('${S.of(context).text_update_time}：2025-05-06'),
+                  Text('${S.of(context).text_update_time}：2025-09-26'),
                   Row(
                     children: [
                       const Text('github:'),
