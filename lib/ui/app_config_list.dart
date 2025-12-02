@@ -422,8 +422,7 @@ class AppConfigState extends State<AppConfigList> {
                         // CheckedPopupMenuItem<AppOption>(
                         //   checked: _ignoreLocalhost,
                         //   value: AppOption.ignoreLocalhost,
-                        //   child: const Text('忽略localhost请求'),
-                        // )
+                        //   child: const Text('忽略localhost请求'),)
                       ];
                     })
               ]),
