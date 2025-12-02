@@ -82,7 +82,7 @@ class _AppSettingsState extends State<AppSettings> {
           Container(
             alignment: Alignment.centerLeft,
             padding: const EdgeInsets.only(left: 10.0, top: 10.0),
-            child: Text(S.of(context).LanguageChoice,
+            child: Text(S.of(context).text_language,
                 style: const TextStyle(color: Colors.lightBlue)),
           ),
           GestureDetector(
@@ -95,7 +95,7 @@ class _AppSettingsState extends State<AppSettings> {
                   children: [
                     Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(S.of(context).text_cn_en)),
+                        child: Text(S.of(context).text_switch_language)),
                     const Spacer(),
                     Switch(
                         value: _isSwitchZh,
